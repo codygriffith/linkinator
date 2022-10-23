@@ -29,6 +29,7 @@ export interface RetryInfo {
 
 export interface LinkResult {
   url: string;
+  responseURL: string;
   status?: number;
   state: LinkState;
   parent?: string;
@@ -175,6 +176,7 @@ export class LinkChecker extends EventEmitter {
     if (proto !== 'http:' && proto !== 'https:') {
       const r: LinkResult = {
         url: mapUrl(opts.url.href, opts.checkOptions),
+        responseURL: mapUrl(opts.url.href, opts.checkOptions),
         status: 0,
         state: LinkState.SKIPPED,
         parent: mapUrl(opts.parent, opts.checkOptions),
@@ -191,6 +193,7 @@ export class LinkChecker extends EventEmitter {
     ) {
       const result: LinkResult = {
         url: mapUrl(opts.url.href, opts.checkOptions),
+        responseURL: mapUrl(opts.url.href, opts.checkOptions),
         state: LinkState.SKIPPED,
         parent: opts.parent,
       };
@@ -210,6 +213,7 @@ export class LinkChecker extends EventEmitter {
       if (skips.length > 0) {
         const result: LinkResult = {
           url: mapUrl(opts.url.href, opts.checkOptions),
+          responseURL: mapUrl(opts.url.href, opts.checkOptions),
           state: LinkState.SKIPPED,
           parent: mapUrl(opts.parent, opts.checkOptions),
         };
@@ -237,6 +241,7 @@ export class LinkChecker extends EventEmitter {
 
     // Perform a HEAD or GET request based on the need to crawl
     let status = 0;
+    let responseURL = '';
     let state = LinkState.BROKEN;
     let shouldRecurse = false;
     let res: GaxiosResponse<Readable> | undefined = undefined;
@@ -299,6 +304,7 @@ export class LinkChecker extends EventEmitter {
     }
 
     if (res !== undefined) {
+      responseURL = res.request.responseURL
       status = res.status;
       shouldRecurse = isHtml(res);
     }
@@ -318,6 +324,7 @@ export class LinkChecker extends EventEmitter {
 
     const result: LinkResult = {
       url: mapUrl(opts.url.href, opts.checkOptions),
+      responseURL,
       status,
       state,
       parent: mapUrl(opts.parent, opts.checkOptions),
@@ -338,6 +345,7 @@ export class LinkChecker extends EventEmitter {
         if (!result.url) {
           const r = {
             url: mapUrl(result.link, opts.checkOptions),
+            responseURL: mapUrl(result.link, opts.checkOptions),
             status: 0,
             state: LinkState.BROKEN,
             parent: mapUrl(opts.url.href, opts.checkOptions),
